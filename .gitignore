@@ -1,0 +1,9 @@
+env.json
+node_modules/
+*.*.swp
+.jshintrc
+.redisConsole.log
+sys/grpctest.js
+
+# npm node module
+package-lock.json
