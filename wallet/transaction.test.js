@@ -59,5 +59,120 @@ describe('Transaction', () => {
             ).toBe(true);
         })
     })
+
+    describe('Valid Transaction', () => {
+
+        let errorMock;
+
+        beforeEach(()=> {
+            errorMock = jest.fn();
+            global.console.error = errorMock;
+        })
+        
+        describe('When the transaction is valid', () => {
+            it('Returns True', () => {
+                expect(Transaction.validTransaction(transaction)).toBe(true);
+            })
+        });
+
+        describe('When the transaction is invalid', () => {
+            
+            describe('And a transaction outputMap value is invalid', () => {
+                it('Returns False and Logs an Error', ()=> {
+                    transaction.outputMap[senderWallet.publicKey] = 999999;
+                    expect(Transaction.validTransaction(transaction)).toBe(false);
+                    expect(errorMock).toHaveBeenCalled();
+                })
+            })
+
+            describe('And the transaction input signature is invalid', () => {
+                it('Returns False and Logs an Error', ()=> {
+                    transaction.input.signature = new Wallet().sign('data');
+                    expect(Transaction.validTransaction(transaction)).toBe(false);
+                    expect(errorMock).toHaveBeenCalled();
+                })
+            })
+            
+            
+        })
+        
+        
+    })
+    
+    describe('Update Transaction', ()=> {
+
+        let originalSignature, originalSenderOutput, nextRecipient, nextAmount;
+
+        describe('Amount is invalid', () => {
+            
+            it('Throws an Error', ()=> {
+                expect(()=> {
+                    transaction.update({
+                        senderWallet,
+                        recipient: 'foo',
+                        amount: 999999
+                    })
+                }).toThrow('Amount Exceeds Balance');
+            })
+        })
+        
+
+        describe('Amount is valid', () => {
+
+            beforeEach(()=> {
+                originalSignature = transaction.input.signature;
+                originalSenderOutput = transaction.outputMap[senderWallet.publicKey];
+                nextRecipient = 'next-recipient';
+                nextAmount = 50;
+    
+                transaction.update({
+                    senderWallet,
+                    recipient: nextRecipient,
+                    amount: nextAmount
+                })
+            })
+            
+
+            it('Outputs the amount to the next recipient', ()=> {
+                expect(transaction.outputMap[nextRecipient]).toEqual(nextAmount);
+            })
+    
+            it('Subtracts the amount from the original sender output amount', ()=> {
+                expect(transaction.outputMap[senderWallet.publicKey]).toEqual(originalSenderOutput - nextAmount);
+            })
+    
+            it('Maintains a total output that matches the input amount', ()=>{
+                expect(Object.values(transaction.outputMap).reduce((total, outputMap) => total + outputMap)).toEqual(transaction.input.amount);
+            })
+    
+            it('Re-signs the Transaction', ()=>{
+                expect(transaction.input.signature).not.toEqual(originalSignature);
+            })
+
+            describe('Another Update for the Same Recipient', () => {
+                let addedAmount;
+
+                beforeEach(()=> {
+                    addedAmount = 80;
+                    transaction.update({
+                        senderWallet,
+                        recipient: nextRecipient,
+                        amount: addedAmount
+                    })
+                })
+
+                it('Adds to the Recipient Amount', ()=> {
+                    expect(transaction.outputMap[nextRecipient]).toEqual(nextAmount + addedAmount);
+                })
+
+                it('Subtracts the amount from the original sender output amount', ()=> {
+                    expect(transaction.outputMap[senderWallet.publicKey]).toEqual(originalSenderOutput - nextAmount - addedAmount);
+                })
+
+            });
+            
+        })
+       
+    })
     
 })
