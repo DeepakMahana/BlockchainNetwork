@@ -4,7 +4,7 @@ const INITIAL_DIFFICULTY = 3;
 const GENESIS_DATA = {
     timestamp: "01/01/01",
     lastHash: "1234567",
-    hash: "----",
+    hash: "genesis-hash",
     difficulty: INITIAL_DIFFICULTY,
     nonce: 0,
     data: []

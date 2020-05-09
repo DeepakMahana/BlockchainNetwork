@@ -8,9 +8,9 @@ const CHANNELS = {
 
 class PubSub{
 
-    constructor({ blockhain, transactionPool }){
+    constructor({ blockchain, transactionPool }){
 
-        this.blockhain = blockhain;
+        this.blockchain = blockchain;
         this.transactionPool = transactionPool;
 
         this.publisher = redis.createClient();
@@ -35,7 +35,7 @@ class PubSub{
 
         switch(channel){
             case CHANNELS.BLOCKCHAIN:
-                this.blockhain.replaceChain(parsedMessage, true, ()=> {
+                this.blockchain.replaceChain(parsedMessage, true, ()=> {
                     this.transactionPool.clearBlockchainTransactions({
                         chain: parsedMessage
                     })
