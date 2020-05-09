@@ -2,8 +2,10 @@ env.json
 node_modules/
 *.*.swp
 .jshintrc
+.cache
 .redisConsole.log
 sys/grpctest.js
+client/dist
 
 # npm node module
 package-lock.json
