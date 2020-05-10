@@ -1,64 +1,57 @@
 import React, { Component } from 'react';
-import { FormGroup, FormControl, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import history from '../history';
+import Block from './Block';
 
-class ConductTransaction extends Component {
-    
-    state = { recipient: '', amount: 0 };
+class Blocks extends Component {
 
-    updateRecipient = event => {
-        this.setState({ recipient: event.target.value }); 
-    }
+  state = { blocks: [], paginatedId: 1, blocksLength: 0 };
 
-    updateAmount = event => {
-        this.setState({ amount: Number(event.target.value) });
-    }
+  componentDidMount() {
+    fetch(`${document.location.origin}/api/blocks/length`)
+      .then(response => response.json())
+      .then(json => this.setState({ blocksLength: json }));
 
-    conductTransaction = () => {
-        const { recipient, amount } = this.state;
-        fetch(`${document.location.origin}/api/transact`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify({recipient, amount})
-        }).then(response => response.json())
-          .then(json => {
-              alert(json.message || json.type);
-              history.push('/transaction-pool');
-          });
-    }
+    this.fetchPaginatedBlocks(this.state.paginatedId)();
+  }
 
-    render(){
-        return(
-            <div className='ConductTransaction'>
-                <Link to='/'>Home</Link>
-                <h3>Conduct a Transaction</h3>
-                <FormGroup>
-                    <FormControl
-                        input='text'
-                        placeholder='recipient'
-                        value={this.state.recipient}
-                        onChange={this.updateRecipient}
-                    />
-                </FormGroup>
-                <FormGroup>
-                    <FormControl
-                        input='number'
-                        placeholder='amount'
-                        value={this.state.amount}
-                        onChange={this.updateAmount}
-                    />
-                </FormGroup>
-                <div>
-                    <Button
-                        bsStyle="danger"
-                        onClick={this.conductTransaction}
-                    >Submit
-                    </Button>
-                </div>
-            </div>
-        )
-    }
+  fetchPaginatedBlocks = paginatedId => () => {
+    fetch(`${document.location.origin}/api/blocks/${paginatedId}`)
+      .then(response => response.json())
+      .then(json => this.setState({ blocks: json }));
+  }
+
+  render() {
+      
+    return (
+      <div>
+        <div><Link to='/'>Home</Link></div>
+        <h3>Blocks</h3>
+        <div>
+          {
+            [...Array(Math.ceil(this.state.blocksLength/5)).keys()].map(key => {
+              const paginatedId = key+1;
+
+              return (
+                <span key={key} onClick={this.fetchPaginatedBlocks(paginatedId)}>
+                  <Button bsSize="small" bsStyle="danger">
+                    {paginatedId}
+                  </Button>{' '}
+                </span>
+              )
+            })
+          }
+        </div>
+        {
+          this.state.blocks.map(block => {
+            return (
+              <Block key={block.hash} block={block} />
+            );
+          })
+        }
+      </div>
+    );
+  }
 }
 
-export default ConductTransaction;
+export default Blocks;
