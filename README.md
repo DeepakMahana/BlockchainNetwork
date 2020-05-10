@@ -1,5 +1,5 @@
 # BlockchainNetwork
-Blockchain Network from scratch using Nodejs
+Blockchain Network from scratch using NodeJS, Express, Redis and ReactJS
 
 * Created blockchain network, hashing, mining of blocks, and Proof of work implementation.
 * Developed REST APIs to create transactions, store them in transaction pool, and maintain a digital wallet.
